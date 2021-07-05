@@ -9,4 +9,4 @@ https://blogs.sap.com/2016/07/03/an-open-source-abap-json-library-zclmdpjson/
 
 ## Quick fix patch for the old library
 
-If you are already using the old library and need quick fixes, you can use the parsing class [here](docs\old-library-patch\zcl_mdp_json_deserializer2.abap)
+If you are already using the old library and need quick fixes, you can use the parsing class [here](docs/old-library-patch/zcl_mdp_json_deserializer2.abap)
