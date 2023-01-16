@@ -1,4 +1,9 @@
-# abap-tasty-json
+# Fork of abap-tasty-json
+
+##Imporvements planned:
+
+- Pretty Print
+- Avoid dumps on retrieve of unexisting child nodes
 
 This library fixes regex parsing bugs from the original library [zcl_mdp_json](https://github.com/fatihpense/zcl_mdp_json) It is still used by/found useful by some ABAP developers and it was hard to fix bugs without introducing new bugs.
 
