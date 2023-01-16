@@ -23,7 +23,11 @@ CLASS zcl_tasty_json_serializer DEFINITION
 
    ,serialize_array
         IMPORTING jsonnode TYPE REF TO zcl_tasty_json_node
-        EXPORTING json TYPE string.
+        EXPORTING json TYPE string
+    ,get_escaped_value
+            IMPORTING jsonnode TYPE REF TO zcl_tasty_json_node
+        RETURNING VALUE(json) TYPE string.
+
 *        CHANGING  offset TYPE i .
     CONSTANTS: co_debug_mode TYPE i VALUE 1.
 
@@ -31,7 +35,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_TASTY_JSON_SERIALIZER IMPLEMENTATION.
+CLASS zcl_tasty_json_serializer IMPLEMENTATION.
 
 
   METHOD serialize.
@@ -60,7 +64,8 @@ CLASS ZCL_TASTY_JSON_SERIALIZER IMPLEMENTATION.
 
     CASE    jsonnode->json_type.
       WHEN  zcl_tasty_json_node=>co_json_string.
-        CONCATENATE '"' jsonnode->value '"' INTO l_json.
+        DATA(escaped) = get_escaped_value( jsonnode ).
+        CONCATENATE '"' escaped '"' INTO l_json.
       WHEN zcl_tasty_json_node=>co_json_number.
         l_json = jsonnode->value.
       WHEN zcl_tasty_json_node=>co_json_false.
@@ -77,7 +82,7 @@ CLASS ZCL_TASTY_JSON_SERIALIZER IMPLEMENTATION.
         l_json = '['.
         LOOP AT jsonnode->array_children INTO wa_array_children.
           IF l_index > 0.
-            CONCATENATE l_json ',' INTO l_json.
+            CONCATENATE l_json ',' cl_abap_char_utilities=>cr_lf INTO l_json.
           ENDIF.
 
           serialize_node(
@@ -90,17 +95,17 @@ CLASS ZCL_TASTY_JSON_SERIALIZER IMPLEMENTATION.
           CLEAR wa_array_children.
           l_index = 1.
         ENDLOOP.
-        CONCATENATE l_json ']' INTO l_json.
+        CONCATENATE l_json ']' cl_abap_char_utilities=>cr_lf INTO l_json.
       WHEN zcl_tasty_json_node=>co_json_object.
         DATA : wa_object_children LIKE LINE OF jsonnode->object_children .
 
 
-        l_json = '{'.
+        l_json = '{' && cl_abap_char_utilities=>cr_lf.
 
         l_index = 0 .
         LOOP AT jsonnode->object_children INTO wa_object_children.
           IF l_index > 0.
-            CONCATENATE l_json ',' INTO l_json.
+            CONCATENATE l_json ',' cl_abap_char_utilities=>cr_lf INTO l_json.
           ENDIF.
 
           CONCATENATE l_json '"' wa_object_children-key '":' INTO l_json.
@@ -115,7 +120,7 @@ CLASS ZCL_TASTY_JSON_SERIALIZER IMPLEMENTATION.
           CLEAR wa_array_children.
           l_index = 1.
         ENDLOOP.
-        CONCATENATE l_json '}' INTO l_json.
+        CONCATENATE l_json '}' cl_abap_char_utilities=>cr_lf INTO l_json.
     ENDCASE.
 
     json = l_json.
@@ -124,5 +129,19 @@ CLASS ZCL_TASTY_JSON_SERIALIZER IMPLEMENTATION.
 
   METHOD serialize_object.
 
+  ENDMETHOD.
+
+  METHOD get_escaped_value.
+
+    json =  jsonnode->value.
+
+    REPLACE ALL OCCURRENCES OF '"'                                    IN json WITH '\"'.
+    REPLACE ALL OCCURRENCES OF '\'                                    IN json WITH '\\'.
+    REPLACE ALL OCCURRENCES OF '/'                                    IN json WITH '\/'.
+    REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>backspace      IN json WITH '\b'.
+    REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>form_feed      IN json WITH '\f'.
+    REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>newline        IN json WITH '\n'.
+    REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>cr_lf(1)       IN json WITH '\r'.
+    REPLACE ALL OCCURRENCES OF cl_abap_char_utilities=>horizontal_tab IN json WITH '\t'.
   ENDMETHOD.
 ENDCLASS.
