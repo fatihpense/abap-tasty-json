@@ -1,6 +1,6 @@
 # Fork of abap-tasty-json
 
-## Imporvements:
+## Improvements:
 - Pretty Print with method `serialize_formatted`
 - new method `string_set_child_node` to create directly a sting node with key and value
 - Fixed handilng of escaped characters `\"` `\n` `\t` `\r` `\f` `\b` `\/` `\\` in serialization
