@@ -63,6 +63,9 @@ CLASS zcl_tasty_json_node DEFINITION
     METHODS serialize
       RETURNING
         VALUE(json_string) TYPE string .
+    METHODS serialize_formatted
+      RETURNING
+        VALUE(json_string) TYPE string .
     CLASS-METHODS deserialize
       IMPORTING
         !json       TYPE string
@@ -82,8 +85,9 @@ CLASS zcl_tasty_json_node DEFINITION
       RETURNING
         VALUE(node) TYPE REF TO zcl_tasty_json_node .
     CLASS-METHODS create_string_node
+      IMPORTING i_value     TYPE string OPTIONAL
       RETURNING
-        VALUE(node) TYPE REF TO zcl_tasty_json_node .
+                VALUE(node) TYPE REF TO zcl_tasty_json_node .
     CLASS-METHODS create_number_node
       RETURNING
         VALUE(node) TYPE REF TO zcl_tasty_json_node .
@@ -104,7 +108,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_TASTY_JSON_NODE IMPLEMENTATION.
+CLASS zcl_tasty_json_node IMPLEMENTATION.
 
 
   METHOD array_add_child_node.
@@ -167,6 +171,7 @@ CLASS ZCL_TASTY_JSON_NODE IMPLEMENTATION.
 
   METHOD create_string_node.
     CREATE OBJECT node TYPE zcl_tasty_json_node EXPORTING json_type = zcl_tasty_json_node=>co_json_string .
+    NODE->value = i_value.
   ENDMETHOD.
 
 
@@ -223,6 +228,13 @@ CLASS ZCL_TASTY_JSON_NODE IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD serialize_formatted.
+
+    zcl_tasty_json_serializer=>serialize_formatted(
+  EXPORTING node = me
+  IMPORTING json = json_string ).
+
+  ENDMETHOD.
 
   METHOD string_set_value.
     me->value = value.
