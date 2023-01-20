@@ -60,6 +60,18 @@ CLASS zcl_tasty_json_node DEFINITION
         !child_node        TYPE REF TO zcl_tasty_json_node
       RETURNING
         VALUE(object_node) TYPE REF TO zcl_tasty_json_node .
+    METHODS string_add_child_node
+      IMPORTING
+        !child_key         TYPE string
+        !child_value       TYPE string
+      RETURNING
+        VALUE(object_node) TYPE REF TO zcl_tasty_json_node .
+    METHODS string_set_child_node
+      IMPORTING
+        !child_key         TYPE string
+        !child_value       TYPE string
+      RETURNING
+        VALUE(object_node) TYPE REF TO zcl_tasty_json_node .
     METHODS serialize
       RETURNING
         VALUE(json_string) TYPE string .
@@ -171,7 +183,7 @@ CLASS zcl_tasty_json_node IMPLEMENTATION.
 
   METHOD create_string_node.
     CREATE OBJECT node TYPE zcl_tasty_json_node EXPORTING json_type = zcl_tasty_json_node=>co_json_string .
-    NODE->value = i_value.
+    node->value = i_value.
   ENDMETHOD.
 
 
@@ -193,11 +205,11 @@ CLASS zcl_tasty_json_node IMPLEMENTATION.
 
   METHOD object_add_child_node.
 
-    DATA : wa_array_children TYPE zcl_tasty_json_node=>typ_array_children .
-
-    wa_array_children-node = child_node .
-
-    APPEND wa_array_children TO me->array_children.
+*    DATA : wa_array_children TYPE zcl_tasty_json_node=>typ_array_children .
+*
+*    wa_array_children-node = child_node .
+*
+*    APPEND wa_array_children TO me->array_children.
 
 
     DATA : wa_object_children TYPE  zcl_tasty_json_node=>typ_object_children .
@@ -240,4 +252,28 @@ CLASS zcl_tasty_json_node IMPLEMENTATION.
     me->value = value.
     node = me.
   ENDMETHOD.
+
+  METHOD string_add_child_node.
+    DATA : wa_object_children TYPE  zcl_tasty_json_node=>typ_object_children .
+    wa_object_children-key = child_key .
+
+    wa_object_children-node = zcl_tasty_json_node=>create_string_node( child_value ) .
+
+    INSERT wa_object_children INTO TABLE me->object_children.
+
+    object_node = me.
+  ENDMETHOD.
+
+  METHOD string_set_child_node.
+    DATA : wa_object_children TYPE  zcl_tasty_json_node=>typ_object_children .
+    wa_object_children-key = child_key .
+    wa_object_children-node = zcl_tasty_json_node=>create_string_node( child_value ) .
+    TRY .
+        me->object_children[ key = child_key ]-node = wa_object_children-node.
+      CATCH cx_sy_itab_line_not_found.
+        INSERT wa_object_children INTO TABLE me->object_children.
+    ENDTRY.
+  object_node = me.
+ENDMETHOD.
+
 ENDCLASS.
